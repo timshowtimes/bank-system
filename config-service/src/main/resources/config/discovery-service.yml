@@ -1,0 +1,9 @@
+example:
+  message: "Hello from Config Server! [Discovery Service]"
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  server:
+    enable-self-preservation: false

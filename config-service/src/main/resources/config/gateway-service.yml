@@ -1,0 +1,31 @@
+example:
+  message: "Hello from Config Server! [Gateway Service]"
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+    discovery:
+      enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://oauth-service:8080/auth/realms/bank
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
