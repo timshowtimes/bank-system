@@ -12,7 +12,6 @@
     <packaging>pom</packaging>
     <name>Bank System</name>
 
-
     <modules>
         <module>gateway-service</module>
         <module>config-service</module>
