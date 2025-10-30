@@ -5,5 +5,21 @@ spring:
   application:
     name: accounts-service
 
+# для корректного определения имени сервиса через эврику
+  cloud:
+    inetutils:
+      ignored-interfaces:
+        - VMware.*
+        - vbox.*
+      preferred-networks:
+        - 127.0.0.1
+        - localhost
   config:
     import: "optional:configserver:http://localhost:8888"
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
