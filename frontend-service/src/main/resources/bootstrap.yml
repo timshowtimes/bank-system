@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: frontend-service
+  cloud:
+    config:
+      uri: http://config-service:8888
+      fail-fast: true
+      retry:
+        max-attempts: 10
+        initial-interval: 2000

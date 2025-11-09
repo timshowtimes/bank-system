@@ -1,0 +1,55 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres-transfers:5432/transfer_operations
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/master/db.changelog-master.xml
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    org.hibernate.SQL: DEBUG
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,resilience4j*
+
+
+resilience4j:
+  retry:
+    instances:
+      cashServiceRetry:
+        max-attempts: 3
+        wait-duration: 1s
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - java.net.SocketTimeoutException
+  circuitbreaker:
+    instances:
+      cashServiceCircuitBreaker:
+        ignore-exceptions:
+          - kz.timshowtime.transferservice.exceptions.BusinessException
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 5s
+  timelimiter:
+    instances:
+      cashServiceTimeLimiter:
+        timeout-duration: 8s

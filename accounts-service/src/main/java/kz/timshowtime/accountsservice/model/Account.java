@@ -28,6 +28,8 @@ public class Account {
     private String email;
     private LocalDate birthDate;
 
+    private LocalDate createdAt;
+
     @Builder.Default
     private BigDecimal balance = BigDecimal.ZERO;
 }

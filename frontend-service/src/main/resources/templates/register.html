@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script>
+        async function registerUser() {
+            const dto = {
+                login: document.getElementById("login").value.trim(),
+                password: document.getElementById("password").value.trim(),
+                firstName: document.getElementById("firstName").value.trim(),
+                lastName: document.getElementById("lastName").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                birthDate: document.getElementById("birthDate").value
+            };
+
+            if (!dto.login || !dto.password || !dto.firstName || !dto.lastName || !dto.email || !dto.birthDate) {
+                return alert("❌ Все поля обязательны");
+            }
+
+            const res = await fetch("/api/v1/auth/register", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(dto)
+            });
+
+            const text = await res.text();
+            try {
+                const data = JSON.parse(text);
+                alert(res.ok ? "✅ " + data.message : "❌ " + data.message);
+            } catch {
+                alert("❌ " + text);
+            }
+
+            if (res.ok) window.location.href = "/login";
+        }
+    </script>
+</head>
+
+<body class="p-4 bg-light">
+<div class="container col-md-6">
+    <h3 class="mb-4">Регистрация нового пользователя</h3>
+
+    <div class="card p-4">
+        <input id="login" placeholder="Логин" class="form-control mb-2">
+        <input id="password" type="password" placeholder="Пароль" class="form-control mb-2">
+        <input id="firstName" placeholder="Имя" class="form-control mb-2">
+        <input id="lastName" placeholder="Фамилия" class="form-control mb-2">
+        <input id="email" type="email" placeholder="Email" class="form-control mb-2">
+        <label>Дата рождения:</label>
+        <input id="birthDate" type="date" class="form-control mb-3">
+
+        <button class="btn btn-primary w-100" onclick="registerUser()">Зарегистрироваться</button>
+        <a href="/login.html" class="btn btn-link mt-2">Назад к входу</a>
+    </div>
+</div>
+</body>
+</html>

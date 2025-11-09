@@ -3,13 +3,23 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/accounts-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/accounts-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cash-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cash-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/config-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/config-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/discovery-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/discovery-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/frontend-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/frontend-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/gateway-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/gateway-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/notifications-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/notifications-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/stub-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/stub-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/transfer-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/transfer-service/src/main/resources" charset="UTF-8" />
   </component>
 </project>

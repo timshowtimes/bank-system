@@ -1,0 +1,23 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: stub-service
+  config:
+    import: optional:configserver:http://config-service:8888
+
+  cloud:
+    inetutils:
+      ignored-interfaces:
+        - VMware.*
+        - vbox.*
+      preferred-networks:
+        - 127.0.0.1
+        - localhost
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}

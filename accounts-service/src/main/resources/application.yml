@@ -5,7 +5,14 @@ spring:
   application:
     name: accounts-service
 
-# для корректного определения имени сервиса через эврику
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/bank
+          jwk-set-uri: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
+
+
   cloud:
     inetutils:
       ignored-interfaces:
@@ -15,7 +22,7 @@ spring:
         - 127.0.0.1
         - localhost
   config:
-    import: "optional:configserver:http://localhost:8888"
+    import: "optional:configserver:http://config-service:8888"
 
 
 eureka:

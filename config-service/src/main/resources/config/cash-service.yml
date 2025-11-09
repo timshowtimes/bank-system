@@ -1,0 +1,68 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+
+logging:
+  level:
+    io.github.resilience4j: DEBUG
+    io.github.resilience4j.circuitbreaker: DEBUG
+    org.springframework.aop: DEBUG
+    org.springframework.beans.factory: DEBUG
+    root: INFO
+    org.springframework.web: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    org.hibernate.SQL: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: cash-service
+    export:
+      prometheus:
+        enabled: true
+
+
+resilience4j:
+  retry:
+    instances:
+      accountServiceRetry:
+        max-attempts: 2
+        wait-duration: 500ms
+        retry-exceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.HttpClientErrorException
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+  circuitbreaker:
+    instances:
+      accountServiceCircuitBreaker:
+        failure-rate-threshold: 30
+        sliding-window-size: 5
+        wait-duration-in-open-state: 5s
+        record-exceptions:
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+          - org.springframework.web.client.ResourceAccessException
+#          - org.springframework.web.client.HttpServerErrorException
+#          - org.springframework.web.client.HttpClientErrorException
+        ignore-exceptions:
+          - java.lang.IllegalArgumentException
+  timelimiter:
+    instances:
+      accountServiceTimeLimiter:
+        timeout-duration: 3s
+        cancel-running-future: true

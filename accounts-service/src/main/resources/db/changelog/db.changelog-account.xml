@@ -29,6 +29,7 @@
             <column name="birth_date" type="DATE"/>
 
             <column name="balance" type="NUMERIC(15,2)" defaultValueNumeric="0.00"/>
+            <column name="created_at" type="timestamp" defaultValueComputed="now()"/>
         </createTable>
     </changeSet>
 

@@ -1,0 +1,5 @@
+services:
+  accounts:
+    url: http://localhost:9999
+  stub:
+    url: http://localhost:9999

@@ -17,6 +17,11 @@
         <module>config-service</module>
         <module>discovery-service</module>
         <module>accounts-service</module>
+        <module>cash-service</module>
+        <module>transfer-service</module>
+        <module>notifications-service</module>
+        <module>stub-service</module>
+        <module>frontend-service</module>
     </modules>
 
     <properties>
@@ -45,19 +50,45 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- JUnit + Mockito + AssertJ -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <scope>test</scope>
+            </dependency>
+
         </dependencies>
+
     </dependencyManagement>
 
     <build>
         <pluginManagement>
             <plugins>
-                <!-- Spring Boot Plugin -->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring.boot.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
 
-                <!-- Maven Compiler -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>

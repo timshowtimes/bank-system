@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход в систему</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/login.css}">
+</head>
+<body>
+<div class="login-container">
+    <h2>Вход в систему</h2>
+
+    <form id="loginForm">
+        <input type="text" name="login" placeholder="Логин" required><br>
+        <input type="password" name="password" placeholder="Пароль" required><br>
+        <button type="submit">Войти</button>
+    </form>
+
+    <p>Нет аккаунта? <a href="/register-page">Зарегистрироваться</a></p>
+
+    <p id="errorMessage" style="color:red; display:none;">Неверный логин или пароль</p>
+</div>
+
+<script>
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const login = e.target.login.value.trim();
+        const password = e.target.password.value.trim();
+
+        const response = await fetch("/api/v1/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ login, password })
+        });
+
+        if (response.ok) {
+            console.log("✅ Авторизация успешна");
+
+            window.location.href = "/home";
+        } else {
+            document.getElementById("errorMessage").style.display = "block";
+        }
+    });
+</script>
+</body>
+</html>

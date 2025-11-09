@@ -8,6 +8,11 @@
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/config-service/pom.xml" />
         <option value="$PROJECT_DIR$/accounts-service/pom.xml" />
+        <option value="$PROJECT_DIR$/cash-service/pom.xml" />
+        <option value="$PROJECT_DIR$/transfer-service/pom.xml" />
+        <option value="$PROJECT_DIR$/notifications-service/pom.xml" />
+        <option value="$PROJECT_DIR$/stub-service/pom.xml" />
+        <option value="$PROJECT_DIR$/frontend-service/pom.xml" />
       </list>
     </option>
   </component>

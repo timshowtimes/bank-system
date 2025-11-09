@@ -1,0 +1,267 @@
+version: "3.9"
+
+services:
+  # === KEYCLOAK DATABASE ===
+  keycloak-db:
+    image: postgres:15
+    container_name: keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - keycloak_data:/var/lib/postgresql/data
+    networks:
+      - bank-net
+
+  # === KEYCLOAK SERVER ===
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.2
+    container_name: keycloak
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak-import:/opt/keycloak/data/import
+    depends_on:
+      - keycloak-db
+    networks:
+      - bank-net
+
+
+  # === DISCOVERY SERVICE ===
+  discovery-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: discovery-service
+        PORT: 8761
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    networks:
+      - bank-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # === CONFIG SERVICE ===
+  config-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: config-service
+        PORT: 8888
+    container_name: config-service
+    ports:
+      - "8888:8888"
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - bank-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # === DATABASE: ACCOUNTS ===
+  postgres-accounts:
+    image: postgres:16
+    container_name: postgres-accounts
+    environment:
+      POSTGRES_DB: bank_accounts
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5433:5432"
+    networks:
+      - bank-net
+    volumes:
+      - postgres_accounts_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # === DATABASE: TRANSFERS ===
+  postgres-transfers:
+    image: postgres:16
+    container_name: postgres-transfers
+    environment:
+      POSTGRES_DB: transfer_operations
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5434:5432"
+    networks:
+      - bank-net
+    volumes:
+      - postgres_transfers_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # === ACCOUNTS SERVICE ===
+  accounts-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: accounts-service
+        PORT: 8081
+    container_name: accounts-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      config-service:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+      postgres-accounts:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-service:8888
+    networks:
+      - bank-net
+
+  # === TRANSFER SERVICE ===
+  transfer-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: transfer-service
+        PORT: 8083
+    container_name: transfer-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      config-service:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+      postgres-transfers:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-service:8888
+    networks:
+      - bank-net
+
+  # === CASH SERVICE ===
+  cash-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: cash-service
+        PORT: 8082
+    container_name: cash-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      config-service:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+      accounts-service:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-service:8888
+    networks:
+      - bank-net
+
+  # === NOTIFICATION SERVICE ===
+  notifications-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: notifications-service
+        PORT: 8084
+    container_name: notifications-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      config-service:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-service:8888
+    networks:
+      - bank-net
+
+  # === GATEWAY SERVICE ===
+  gateway-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: gateway-service
+        PORT: 6969
+    container_name: gateway-service
+    ports:
+      - "6969:6969"
+    depends_on:
+      config-service:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+      accounts-service:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-service:8888
+    networks:
+      - bank-net
+
+  # === FRONTEND SERVICE ===
+  frontend-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: frontend-service
+        PORT: 8086
+    container_name: frontend-service
+    ports:
+      - "8086:8086"
+    depends_on:
+      gateway-service:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-service:8888
+    networks:
+      - bank-net
+
+# === СЕТЬ ===
+networks:
+  bank-net:
+    driver: bridge
+
+# === ТОМЫ ДЛЯ БД ===
+volumes:
+  postgres_accounts_data:
+  postgres_transfers_data:
+  keycloak_data:

@@ -1,0 +1,44 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: transfer-service
+  config:
+    import: "optional:configserver:http://config-service:8888"
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/bank
+          jwk-set-uri: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
+      client:
+        registration:
+          service-client:
+            client-id: service-client
+            client-secret: qy7mH3W0SuPlOokJXq8TIIKh5X03Jeb1
+            authorization-grant-type: client_credentials
+            provider: keycloak
+            client-authentication-method: client_secret_basic
+            scope:
+              - openid
+              - profile
+        provider:
+          keycloak:
+            token-uri: http://keycloak:8080/realms/bank/protocol/openid-connect/token
+
+  cloud:
+    inetutils:
+      ignored-interfaces:
+        - VMware.*
+        - vbox.*
+      preferred-networks:
+        - 127.0.0.1
+        - localhost
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}

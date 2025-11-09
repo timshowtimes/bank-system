@@ -1,0 +1,35 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: frontend-service
+  config:
+    import: "optional:configserver:http://config-service:8888"
+  cloud:
+    discovery:
+      enabled: true
+    inetutils:
+      ignored-interfaces:
+        - VMware.*
+        - vbox.*
+      preferred-networks:
+        - 127.0.0.1
+        - localhost
+
+keycloak:
+  realm: bank
+  auth-server-url: http://keycloak:8080
+  token-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/token
+  client-id: bank-frontend
+  client-secret: 9w0LXnldIRxraCoFI6uVlrYzWzcYQnyW
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+  client:
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/
+

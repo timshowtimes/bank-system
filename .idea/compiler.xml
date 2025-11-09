@@ -8,8 +8,9 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="accounts-service" />
-        <module name="discovery-service" />
         <module name="config-service" />
+        <module name="frontend-service" />
+        <module name="discovery-service" />
       </profile>
       <profile name="Annotation profile for Bank System" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -19,15 +20,24 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
+        <module name="stub-service" />
+        <module name="cash-service" />
         <module name="gateway-service" />
+        <module name="notifications-service" />
+        <module name="transfer-service" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="accounts-service" options="" />
+      <module name="cash-service" options="" />
       <module name="config-service" options="" />
+      <module name="frontend-service" options="" />
       <module name="gateway-service" options="" />
+      <module name="notifications-service" options="" />
+      <module name="stub-service" options="" />
+      <module name="transfer-service" options="" />
     </option>
   </component>
 </project>

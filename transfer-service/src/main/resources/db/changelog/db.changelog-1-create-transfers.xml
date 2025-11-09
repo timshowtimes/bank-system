@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="1-create-transfers" author="timshowtimes">
+        <createTable tableName="transfers">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="transfer_id" type="UUID">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="from_account" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="to_account" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="amount" type="NUMERIC(19,2)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_transfers_transfer_id" tableName="transfers">
+            <column name="transfer_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

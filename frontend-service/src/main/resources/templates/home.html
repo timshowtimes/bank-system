@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Личный кабинет</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .logout {
+            float: right;
+        }
+    </style>
+</head>
+<body class="p-4">
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>💳 Личный кабинет</h3>
+        <a href="/logout" class="btn btn-outline-danger">Выйти</a>
+    </div>
+
+    <!-- === Аккаунт === -->
+    <div class="card p-3 mb-3">
+        <h5 class="mb-3">Информация об аккаунте</h5>
+        <p><b>Логин:</b> <span id="user-login">...</span></p>
+        <p><b>Имя:</b> <span id="user-name">...</span></p>
+        <p><b>Email:</b> <span id="user-email">...</span></p>
+        <p><b>Дата рождения:</b> <span id="user-birth">...</span></p>
+        <p><b>Баланс:</b> <span id="user-balance">0 ₸</span></p>
+        <button class="btn btn-danger" onclick="deleteAccount()">Удалить аккаунт</button>
+    </div>
+
+    <div class="card p-3 mb-3">
+        <h5>Редактировать профиль</h5>
+        <input id="firstName" class="form-control mb-2" placeholder="Имя">
+        <input id="lastName" class="form-control mb-2" placeholder="Фамилия">
+        <input id="email" type="email" class="form-control mb-2" placeholder="Email">
+        <input id="birthDate" type="date" class="form-control mb-2">
+
+        <button class="btn btn-primary" onclick="updateProfile()">Сохранить изменения</button>
+    </div>
+
+    <!-- === Изменить пароль === -->
+    <div class="card p-3 mb-3">
+        <h5 class="mb-3">Изменить пароль</h5>
+        <input id="old-password"
+               type="password"
+               name="oldPassword"
+               placeholder="Старый пароль"
+               required
+               class="form-control mb-2"
+               autocomplete="new-password"
+               autocorrect="off"
+               autocapitalize="off"
+               spellcheck="false">
+
+        <input id="new-password"
+               type="password"
+               name="newPassword"
+               placeholder="Новый пароль"
+               required
+               class="form-control mb-2"
+               autocomplete="new-password">
+
+        <input id="confirm-password"
+               type="password"
+               name="confirmPassword"
+               placeholder="Подтвердите новый пароль"
+               required
+               class="form-control mb-2"
+               autocomplete="new-password">
+
+        <button onclick="changePassword()" class="btn btn-primary">Сохранить пароль</button>
+    </div>
+
+    <!-- === Операции с балансом === -->
+    <div class="card p-3 mb-3">
+        <h5 class="mb-3">Операции с балансом</h5>
+        <input id="cash-amount" type="number" placeholder="Введите сумму" class="form-control mb-3">
+        <div class="d-flex gap-2">
+            <button class="btn btn-success flex-fill" onclick="deposit('put')">Положить</button>
+            <button class="btn btn-warning flex-fill" onclick="deposit('get')">Снять</button>
+        </div>
+    </div>
+
+    <!-- === Перевод денег === -->
+    <div class="card p-3 mb-3">
+        <h5 class="mb-3">Перевод денег</h5>
+        <input id="transfer-to" placeholder="Кому (логин)" class="form-control mb-2">
+        <input id="transfer-amount" type="number" placeholder="Сумма перевода" class="form-control mb-2">
+        <button class="btn btn-info w-100" style="background-color: #b5e6d1a6; border-color: #0d2b16;"
+                onclick="transfer()">
+            Перевести
+        </button>
+    </div>
+</div>
+
+<script>
+    let currentAccountId = null;
+
+    // === Загрузка профиля ===
+    async function loadProfile() {
+        try {
+            const response = await fetch("/api/v1/frontend/get-account?ts=" + Date.now(), {cache: "no-store"});
+            if (!response.ok) throw new Error("Не удалось загрузить профиль");
+
+            const user = await response.json();
+            currentAccountId = user.id;
+            console.log("✅ User:", user);
+
+            const el = id => document.getElementById(id);
+            if (el("user-login")) el("user-login").innerText = user.login;
+            if (el("user-name")) el("user-name").innerText = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
+            if (el("user-email")) el("user-email").innerText = user.email ?? '-';
+            if (el("user-birth")) el("user-birth").innerText = user.birthDate ?? '-';
+            if (el("user-balance")) el("user-balance").innerText = (user.balance ?? 0).toFixed(2) + " ₸";
+
+        } catch (err) {
+            console.error(err);
+            alert("Ошибка при загрузке профиля");
+        }
+    }
+
+    async function updateProfile() {
+        const dto = {
+            firstName: document.getElementById("firstName").value.trim(),
+            lastName: document.getElementById("lastName").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            birthDate: document.getElementById("birthDate").value
+        };
+
+        const res = await fetch(`/api/v1/frontend/${currentAccountId}/update-profile`, {
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(dto)
+        });
+
+        const msg = await parseErrorResponse(res);
+        alert(res.ok ? "✅ " + msg : "❌ " + msg);
+
+        if (res.ok) await loadProfile(); // обновить данные
+    }
+
+    async function deleteAccount() {
+        if (!confirm("Вы уверены, что хотите удалить аккаунт?")) return;
+
+        const res = await fetch(`/api/v1/frontend/${currentAccountId}/delete-account`, {method: "DELETE"});
+        const msg = await parseErrorResponse(res);
+        alert(res.ok ? "✅ " + msg : "❌ " + msg);
+
+        if (res.ok) window.location.href = "/login"; // Разлогинить после удаления
+    }
+
+    // === Смена пароля ===
+    async function changePassword() {
+        const oldPassword = document.getElementById("old-password").value.trim();
+        const newPassword = document.getElementById("new-password").value.trim();
+        const confirm = document.getElementById("confirm-password").value.trim();
+
+        if (!oldPassword || !newPassword || !confirm) {
+            return alert("⚠️ Все поля обязательны для заполнения");
+        }
+
+        if (newPassword !== confirm) {
+            return alert("❌ Пароли не совпадают");
+        }
+
+        try {
+            const res = await fetch(`/api/v1/frontend/${currentAccountId}/change-password`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({oldPassword, newPassword})
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("✅ " + (data.message || "Пароль успешно изменён"));
+                // Можно очистить поля
+                document.getElementById("old-password").value = "";
+                document.getElementById("new-password").value = "";
+                document.getElementById("confirm-password").value = "";
+            } else {
+                alert("❌ " + (data.message || "Ошибка при изменении пароля"));
+            }
+        } catch (err) {
+            console.error(err);
+            alert("⚠️ Ошибка сети. Попробуйте позже.");
+        }
+    }
+
+
+    // === Пополнение / снятие ===
+    async function deposit(action) {
+        const amount = document.getElementById("cash-amount").value;
+        if (!amount || amount <= 0) return alert("Введите сумму");
+
+        const url = action === 'put'
+            ? `/api/v1/frontend/deposit/${currentAccountId}?amount=${amount}`
+            : `/api/v1/frontend/withdraw/${currentAccountId}?amount=${amount}`;
+
+        const res = await fetch(url, {method: "POST"});
+        // const msg = await res.text();
+        if (res.ok) {
+            alert("✅ Операция успешна");
+            await loadProfile();
+        } else {
+            const msg = await parseErrorResponse(res)
+            alert("❌ Ошибка: " + msg);
+        }
+    }
+
+    async function parseErrorResponse(res) {
+        try {
+            let text = await res.text();
+
+            // 🔧 Удаляем всё лишнее перед JSON (двоеточия, пробелы, непечатаемые символы)
+            text = text.trim().replace(/^[^{]+/, "");
+
+            try {
+                const data = JSON.parse(text);
+                return data.message || "Неизвестная ошибка";
+            } catch (e) {
+                console.warn("Не удалось распарсить JSON:", text);
+                return text || "Неизвестная ошибка";
+            }
+        } catch {
+            return "Ошибка чтения ответа сервера";
+        }
+    }
+
+
+    // === Перевод денег ===
+    async function transfer() {
+        const to = document.getElementById("transfer-to").value.trim();
+        const amount = parseFloat(document.getElementById("transfer-amount").value);
+        if (!to || !amount || amount <= 0) {
+            alert("Введите логин и сумму");
+            return;
+        }
+
+        console.log("USER ID: " + currentAccountId)
+
+        const payload = {
+            toAccount: to,
+            amount: amount,
+            fromAccount: currentAccountId
+        };
+
+        const res = await fetch("/api/v1/frontend/transfer", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload)
+        });
+
+        const msg = await parseErrorResponse(res)
+        alert(res.ok ? `✅ Перевод успешно выполнен!` : `❌ Ошибка при переводе: ${msg}`);
+
+        if (res.ok) await loadProfile();
+    }
+
+    window.onload = loadProfile;
+</script>
+</body>
+</html>
